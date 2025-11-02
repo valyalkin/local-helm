@@ -1,50 +1,68 @@
-replicaCount: 1
-image:
-  repository: example-svc
-  pullPolicy: Never
-  tag: "latest"
+# Global values shared across all subcharts
+global:
+  imagePullPolicy: Never
+  environment: development
 
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+# Example service configuration
+example-svc:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: example-svc
+    pullPolicy: Never
+    tag: "latest"
 
-serviceAccount:
-  create: true
-  annotations: {}
-  name: ""
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: ""
 
-podAnnotations: {}
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
 
-podSecurityContext: {}
+  service:
+    type: NodePort
+    port: 9000
+    nodePort: 30088
 
-securityContext: {}
+  ingress:
+    enabled: false
+    annotations: {}
+    hosts:
+      - host: chart-example.local
+        paths: []
+    tls: []
 
-service:
-  type: NodePort
-  port: 9000
-  nodePort: 30088
+  resources: {}
 
-ingress:
-  enabled: false
-  annotations: {}
-  hosts:
-    - host: chart-example.local
-      paths: []
-  tls: []
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
 
-resources: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 10
-  targetCPUUtilizationPercentage: 80
+  secrets:
+    alphaVantageApiKey: "your-api-key-here"
 
-nodeSelector: {}
+  # Probes for example-svc
+  livenessProbe:
+    httpGet:
+      path: /liveness
+      port: http
+  readinessProbe:
+    httpGet:
+      path: /readiness
+      port: http
 
-tolerations: []
-
-affinity: {}
-
-secrets:
-  alphaVantageApiKey: "your-api-key-here"
+  # Environment variables for example-svc
+  env:
+    - name: ALPHA_VANTAGE_API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: "{{ include \"common.fullname\" . }}-secret"
+          key: alpha-vantage-api-key

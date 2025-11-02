@@ -1,16 +1,21 @@
+{{/*
+Common deployment template
+Usage: {{ include "common.deployment" . }}
+*/}}
+{{- define "common.deployment" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "local-helm.fullname" . }}
+  name: {{ include "common.fullname" . }}
   labels:
-    {{- include "local-helm.labels" . | nindent 4 }}
+    {{- include "common.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "local-helm.selectorLabels" . | nindent 6 }}
+      {{- include "common.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,13 +23,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "local-helm.selectorLabels" . | nindent 8 }}
+        {{- include "common.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "local-helm.serviceAccountName" . }}
+      serviceAccountName: {{ include "common.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -33,24 +38,37 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.env }}
           env:
-            - name: ALPHA_VANTAGE_API_KEY
+            {{- $root := . }}
+            {{- range $env := .Values.env }}
+            - name: {{ $env.name }}
+              {{- if $env.value }}
+              value: {{ tpl $env.value $root | quote }}
+              {{- else if $env.valueFrom }}
               valueFrom:
+                {{- if $env.valueFrom.secretKeyRef }}
                 secretKeyRef:
-                  name: {{ include "local-helm.fullname" . }}-secret
-                  key: alpha-vantage-api-key
+                  name: {{ tpl $env.valueFrom.secretKeyRef.name $root }}
+                  key: {{ $env.valueFrom.secretKeyRef.key }}
+                {{- else }}
+                {{- toYaml $env.valueFrom | nindent 16 }}
+                {{- end }}
+              {{- end }}
+            {{- end }}
+          {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+          {{- if .Values.livenessProbe }}
           livenessProbe:
-            httpGet:
-              path: /liveness
-              port: http
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .Values.readinessProbe }}
           readinessProbe:
-            httpGet:
-              path: /readiness
-              port: http
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
@@ -65,3 +83,4 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- end }}

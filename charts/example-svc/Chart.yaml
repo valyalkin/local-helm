@@ -1,6 +1,6 @@
 apiVersion: v2
-name: local-helm
-description: Multi-service Helm umbrella chart for local development
+name: example-svc
+description: Example service Helm chart
 type: application
 
 # This is the chart version. This version number should be incremented each time you make changes
@@ -8,12 +8,4 @@ type: application
 version: 0.1.0
 
 # This is the version number of the application being deployed.
-appVersion: "1.0"
-
-# Dependencies on subcharts
-dependencies:
-  - name: example-svc
-    version: "0.1.0"
-    condition: example-svc.enabled
-    tags:
-      - services
+appVersion: "latest"
