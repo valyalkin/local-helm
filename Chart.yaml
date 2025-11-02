@@ -14,6 +14,14 @@ appVersion: "1.0"
 dependencies:
   - name: example-svc
     version: "0.1.0"
+    repository: "file://./charts/example-svc"
     condition: example-svc.enabled
     tags:
       - services
+
+  - name: postgresql
+    version: "15.5.38"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled
+    tags:
+      - databases

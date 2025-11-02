@@ -2,5 +2,8 @@ dependencies:
 - name: example-svc
   repository: file://./charts/example-svc
   version: 0.1.0
-digest: sha256:a078cd13bc8b18002d12ae40f611469757ff0197311620f8354aaea5f90bf43c
-generated: "2025-11-02T15:02:23.131284+08:00"
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 15.5.38
+digest: sha256:658c45d1640b5ec1c03025beba828b6a40fb5fd9c90b163012f1c9c2f4103918
+generated: "2025-11-02T15:38:56.263986+08:00"

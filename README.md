@@ -1,6 +1,11 @@
 # Local Helm Multi-Service Chart
 
-This is an umbrella Helm chart for managing multiple services in a local Kubernetes environment.
+This is an umbrella Helm chart for managing multiple services and databases in a local Kubernetes environment.
+
+## Included Components
+- Custom application services (example-svc)
+- PostgreSQL database (Bitnami chart)
+- Shared common templates for easy service creation
 
 ## Structure
 
@@ -50,11 +55,11 @@ local-helm/
    helm upgrade --install local-helm --namespace dev .
    ```
 
-## Managing Services
+## Managing Services and Databases
 
 ### Enable/Disable Services
 
-Services can be enabled or disabled via the `values.yaml` file or command line:
+Services and databases can be enabled or disabled via the `values.yaml` file or command line:
 
 ```shell
 # Disable a service
@@ -62,7 +67,19 @@ helm upgrade --install local-helm --namespace dev . --set example-svc.enabled=fa
 
 # Enable a service
 helm upgrade --install local-helm --namespace dev . --set example-svc.enabled=true
+
+# Disable PostgreSQL
+helm upgrade --install local-helm --namespace dev . --set postgresql.enabled=false
 ```
+
+### PostgreSQL Database
+
+PostgreSQL is included and accessible at:
+- **Inside cluster:** `test-release-postgresql:5432`
+- **Outside cluster:** `<minikube-ip>:30432`
+- **Credentials:** `devuser` / `devpassword` / `devdb`
+
+See [DATABASE_INFO.md](DATABASE_INFO.md) for connection details and configuration options.
 
 ### Override Service Configuration
 
